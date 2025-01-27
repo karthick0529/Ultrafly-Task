@@ -1,27 +1,35 @@
+require("dotenv").config(); 
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const bodyParser = require("body-parser");
-const app = express();
-const port = 5000;
 
-// Middleware
+const app = express();
+const port = process.env.PORT || 5000;
+
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json()); 
+
+if (!process.env.MONGO_URL) {
+  console.error("Error: MONGO_URL is not defined in environment variables.");
+  process.exit(1);
+}
 
 // Connect to MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/studentDB")
+  .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected..."))
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    console.error("Error connecting to MongoDB:", err.message);
+    process.exit(1); 
+  });
 
 // Define Schema and Model
 const studentSchema = new mongoose.Schema({
-  name: String,
-  rollNumber: Number,
-  class: String,
-  marks: Number,
-  grade: String,
+  name: { type: String, required: true, trim: true },
+  rollNumber: { type: Number, required: true, unique: true },
+  class: { type: String, required: true },
+  marks: { type: Number, required: true, min: 0 },
+  grade: { type: String, required: true },
 });
 
 const Student = mongoose.model("Student", studentSchema);
@@ -45,7 +53,7 @@ app.get("/students", async (req, res) => {
     const { grade, marks } = req.query;
     const filter = {};
     if (grade) filter.grade = grade;
-    if (marks) filter.marks = { $gte: marks };
+    if (marks) filter.marks = { $gte: parseInt(marks, 10) }; // Convert marks to number
     const students = await Student.find(filter);
     res.json(students);
   } catch (err) {
@@ -57,7 +65,7 @@ app.get("/students", async (req, res) => {
 app.put("/students/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const student = await Student.findByIdAndUpdate(id, req.body, { new: true });
+    const student = await Student.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
     if (!student) return res.status(404).json({ error: "Student not found" });
     res.json(student);
   } catch (err) {
