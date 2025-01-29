@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import './StudentForm.css';
 
+// Define the backend URL as a constant
+const BACKEND_URL = "https://ultrafly-task.onrender.com" || "http://localhost:5000";
 
 const StudentForm = () => {
   const [students, setStudents] = useState([]);
@@ -10,8 +12,7 @@ const StudentForm = () => {
 
   const fetchStudents = async () => {
     try {
-      // const response = await axios.get("http://localhost:5000/students");
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/students`);
+      const response = await axios.get(`${BACKEND_URL}/students`);
       setStudents(response.data);
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -32,9 +33,9 @@ const StudentForm = () => {
     e.preventDefault();
     try {
       if (formData._id) {
-        await axios.put(`${process.env.REACT_APP_BACKEND_URL}/students/${formData._id}`, formData);
+        await axios.put(`${BACKEND_URL}/students/${formData._id}`, formData);
       } else {
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/students`, formData);
+        await axios.post(`${BACKEND_URL}/students`, formData);
       }
       setFormData({ name: "", rollNumber: "", class: "", marks: "", grade: "" }); // Clear form
       fetchStudents();
@@ -45,7 +46,7 @@ const StudentForm = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/students/${id}`);
+      await axios.delete(`${BACKEND_URL}/students/${id}`);
       fetchStudents();
     } catch (error) {
       console.error("Error deleting student:", error);
@@ -57,7 +58,7 @@ const StudentForm = () => {
       const queryParams = new URLSearchParams();
       if (searchQuery.grade) queryParams.append("grade", searchQuery.grade);
       if (searchQuery.marks) queryParams.append("marks", searchQuery.marks);
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/students?${queryParams.toString()}`);
+      const response = await axios.get(`${BACKEND_URL}/students?${queryParams.toString()}`);
       setStudents(response.data);
     } catch (error) {
       console.error("Error searching students:", error);
