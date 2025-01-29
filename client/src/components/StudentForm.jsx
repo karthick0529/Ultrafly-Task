@@ -3,7 +3,7 @@ import axios from "axios";
 import './StudentForm.css';
 
 // Define the backend URL as a constant
-const BACKEND_URL = "https://ultrafly-task.onrender.com" || "http://localhost:5000";
+const BACKEND_URL = "https://ultrafly-task-1.onrender.com" || "http://localhost:5000";
 
 const StudentForm = () => {
   const [students, setStudents] = useState([]);
